@@ -1,39 +1,44 @@
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
-  OnInit
+  OnInit,
+  OnDestroy
 } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'coding-challenge-chart',
   templateUrl: './chart.component.html',
   styleUrls: ['./chart.component.css']
 })
-export class ChartComponent implements OnInit {
+export class ChartComponent implements OnInit, OnDestroy {
   @Input() data$: Observable<any>;
-  chartData: any;
+  public chartData: any;
 
-  chart: {
-    title: string;
+  public chart: {
     type: string;
-    data: any;
     columnNames: string[];
     options: any;
   };
+
+  private readonly destroyed: Subject<void> = new Subject<void>();
+
   constructor(private cd: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.chart = {
-      title: '',
       type: 'LineChart',
-      data: [],
       columnNames: ['period', 'close'],
       options: { title: `Stock price`, width: '600', height: '400' }
     };
 
-    this.data$.subscribe(newData => (this.chartData = newData));
+    this.data$.pipe(takeUntil(this.destroyed)).subscribe(newData => (this.chartData = newData));
+  }
+
+  ngOnDestroy() {
+    this.destroyed.next();
+    this.destroyed.complete();
   }
 }
