@@ -18,16 +18,29 @@
   </mat-form-field>
 
   <mat-form-field>
-    <mat-label>Favorite time period</mat-label>
-    <mat-select formControlName="period" (selectionChange)="fetchQuote()">
-      <mat-option
-        *ngFor="let timePeriod of timePeriods"
-        [value]="timePeriod.value"
-      >
-        {{ timePeriod.viewValue }}
-      </mat-option>
-    </mat-select>
+    <mat-label>From Date</mat-label>
+    <input 
+    matInput 
+    [matDatepicker]="fromDate"
+    formControlName="fromDate"
+    [max]="currentDate">
+    <mat-datepicker-toggle matSuffix [for]="fromDate"></mat-datepicker-toggle>
+    <mat-datepicker #fromDate></mat-datepicker>
   </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>To Date</mat-label>
+    <input 
+    matInput 
+    [matDatepicker]="toDate"
+    formControlName="toDate"
+    [min]="stockPickerForm.get('fromDate').value"
+    [max]="currentDate">
+    <mat-datepicker-toggle matSuffix [for]="toDate"></mat-datepicker-toggle>
+    <mat-datepicker #toDate></mat-datepicker>
+  </mat-form-field>
+
+  <button (click)="fetchQuote()" mat-raised-button [disabled]="stockPickerForm.invalid">Go</button>
 
 </form>
 

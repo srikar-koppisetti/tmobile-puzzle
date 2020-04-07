@@ -10,34 +10,61 @@ import { PriceQueryFacade } from '@coding-challenge/stocks/data-access-price-que
 export class StocksComponent implements OnInit {
   stockPickerForm: FormGroup;
   symbol: string;
-  period: string;
 
   quotes$ = this.priceQuery.priceQueries$;
 
-  timePeriods = [
-    { viewValue: 'All available data', value: 'max' },
-    { viewValue: 'Five years', value: '5y' },
-    { viewValue: 'Two years', value: '2y' },
-    { viewValue: 'One year', value: '1y' },
-    { viewValue: 'Year-to-date', value: 'ytd' },
-    { viewValue: 'Six months', value: '6m' },
-    { viewValue: 'Three months', value: '3m' },
-    { viewValue: 'One month', value: '1m' }
-  ];
+  fromDate: string;
+  toDate: string;
+  currentDate = new Date();
 
   constructor(private fb: FormBuilder, private priceQuery: PriceQueryFacade) {
     this.stockPickerForm = fb.group({
       symbol: [null, Validators.required],
-      period: [null, Validators.required]
+      fromDate: [null, Validators.required],
+      toDate: [null, Validators.required]
     });
   }
 
   ngOnInit() {}
 
-  fetchQuote() {
+  fetchQuote() : void {
     if (this.stockPickerForm.valid) {
-      const { symbol, period } = this.stockPickerForm.value;
-      this.priceQuery.fetchQuote(symbol, period);
+      const { symbol, fromDate,  toDate} = this.stockPickerForm.value;
+      const duration = this.durationCal(fromDate, toDate);
+      this.priceQuery.fetchQuote(symbol, duration);
+    }
+  }
+
+  durationCal(from: Date, to: Date) : string {
+    const oneDay = 1000 * 60 * 60 * 24;
+    const differenceInDays = +(Math.round(to.getTime() - from.getTime()) / oneDay).toFixed(0); 
+    switch(true) {
+      case (differenceInDays <= 1):
+        return '1d';
+        break;
+      case (differenceInDays <= 5):
+        return '5d';
+        break;
+      case (differenceInDays <= 30):
+        return '1m';
+        break;
+      case (differenceInDays <= 90):
+        return '3m';
+        break;
+      case (differenceInDays <= 180):
+        return '6m';
+        break;
+      case (differenceInDays <= 366):
+        return '1y';
+        break;
+      case (differenceInDays <= 731):
+        return '2y';
+        break;
+      case (differenceInDays <= 1827):
+        return '5y';
+        break;
+      default:
+        return 'max';
     }
   }
 }
